@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:weather_forecast/additional.dart';
@@ -18,26 +20,66 @@ class WeatherForecastHomePage extends StatefulWidget {
 }
 
 class _WeatherForecastHomePageState extends State<WeatherForecastHomePage> {
-  // TODO: get user location
+  //  get user location
+  Future<String?> getUserCity() async {
+    bool serviceEnabled;
+    LocationPermission permission;
 
-// get api from openweatherorg
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return null;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission != LocationPermission.whileInUse &&
+          permission != LocationPermission.always) {
+        return null;
+      }
+    }
+
+    Position position = await Geolocator.getCurrentPosition();
+    List<Placemark> placemarks =
+        await placemarkFromCoordinates(position.latitude, position.longitude);
+
+    if (placemarks.isNotEmpty) {
+      return placemarks[0].locality; // This will give you the city name
+    } else {
+      return null;
+    }
+  }
+
+  // get api from openweatherorg
   Future<Map<String, dynamic>> getCurrentWeather() async {
     try {
-      // connect api
-      String city = 'myeik';
-      final res = await http.get(Uri.parse(
-          'https://api.openweathermap.org/data/2.5/forecast?q=$city&APPID=428297ac4f29c184baa6a54156ba03b0'));
-      final data = jsonDecode(res.body);
-      if (data['cod'] == '200') {
-        debugPrint('successfully connected to weather API');
-        return data;
+      String? userCity = await getUserCity();
+      print(userCity);
+      if (userCity != null) {
+        final res = await http.get(Uri.parse(
+            'https://api.openweathermap.org/data/2.5/forecast?q=$userCity&APPID=428297ac4f29c184baa6a54156ba03b0'));
+
+        final data = jsonDecode(res.body);
+
+        if (data['cod'] == '200') {
+          debugPrint('successfully connected to weather API');
+          return data;
+        } else {
+          debugPrint(throw 'An error occurred');
+        }
       } else {
-        debugPrint(throw 'An error occured ');
+        debugPrint(throw 'Unable to get user location');
       }
-      //  data['list'][0]['main']['temp'];
     } catch (e) {
       throw e.toString();
     }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getCurrentWeather();
   }
 
   @override
@@ -153,7 +195,7 @@ class _WeatherForecastHomePageState extends State<WeatherForecastHomePage> {
                     final hourlyForecast = data['list'][index + 1];
                     final hourlyImage = hourlyForecast['weather'][0]['icon'];
                     final hourlyImageUrl =
-                        "http://openweathermap.org/img/w/$hourlyImage.png";
+                        "https://openweathermap.org/img/w/$hourlyImage.png";
                     final hourlyTime = hourlyForecast['dt_txt'];
                     final date = DateTime.parse(hourlyTime);
                     final temp = hourlyForecast['main']['temp'] - 273.15;
