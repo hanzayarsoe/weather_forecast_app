@@ -54,8 +54,11 @@ class _WeatherForecastHomePageState extends State<WeatherForecastHomePage> {
   Future<Map<String, dynamic>> getCurrentWeather() async {
     try {
       String? userCity = await getUserCity();
-      print(userCity);
+
       if (userCity != null) {
+        if (userCity == 'Mergui' || userCity == 'Myeik') {
+          userCity = 'myeik';
+        }
         final res = await http.get(Uri.parse(
             'https://api.openweathermap.org/data/2.5/forecast?q=$userCity&APPID=428297ac4f29c184baa6a54156ba03b0'));
 
@@ -73,13 +76,6 @@ class _WeatherForecastHomePageState extends State<WeatherForecastHomePage> {
     } catch (e) {
       throw e.toString();
     }
-  }
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    getCurrentWeather();
   }
 
   @override
@@ -132,7 +128,7 @@ class _WeatherForecastHomePageState extends State<WeatherForecastHomePage> {
           final currenWinspeed = data['list'][0]['wind']['speed'];
           final currenPressure = data['list'][0]['main']['pressure'];
           final currenIcon = data['list'][0]['weather'][0]['icon'];
-          final iconUrl = "http://openweathermap.org/img/w/$currenIcon.png";
+          final iconUrl = "https://openweathermap.org/img/w/$currenIcon.png";
 
           return Padding(
             padding: const EdgeInsets.all(15.0),
@@ -147,7 +143,7 @@ class _WeatherForecastHomePageState extends State<WeatherForecastHomePage> {
                   child: Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                      filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
                       child: Column(
                         children: [
                           Text(
@@ -157,12 +153,13 @@ class _WeatherForecastHomePageState extends State<WeatherForecastHomePage> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Image.network(
-                            iconUrl,
-                            width: 80,
-                            height: 80,
-                            fit: BoxFit.fill,
-                            // alignment: Alignment.center,
+                          SizedBox(
+                            width: 100,
+                            height: 60,
+                            child: Image.network(
+                              iconUrl,
+                              // alignment: Alignment.center,
+                            ),
                           ),
                           Text(
                             '$currenSky',
@@ -223,7 +220,7 @@ class _WeatherForecastHomePageState extends State<WeatherForecastHomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   Additional(
-                    icon: Icons.water_drop,
+                    icon: Icons.opacity,
                     label: 'Humidity',
                     value: currenHumidity.toString(),
                   ),
@@ -233,7 +230,7 @@ class _WeatherForecastHomePageState extends State<WeatherForecastHomePage> {
                     value: currenWinspeed.toString(),
                   ),
                   Additional(
-                    icon: Icons.umbrella,
+                    icon: Icons.speed,
                     label: 'Pressure',
                     value: currenPressure.toString(),
                   ),
