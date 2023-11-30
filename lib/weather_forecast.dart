@@ -155,8 +155,7 @@ class _WeatherForecastHomePageState extends State<WeatherForecastHomePage> {
                           ),
                           Image.network(
                             iconUrl,
-                            width: 80,
-                            height: 80,
+                            height: 60,
                             fit: BoxFit.fill,
                             // alignment: Alignment.center,
                           ),
