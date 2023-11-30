@@ -54,7 +54,6 @@ class _WeatherForecastHomePageState extends State<WeatherForecastHomePage> {
   Future<Map<String, dynamic>> getCurrentWeather() async {
     try {
       String? userCity = await getUserCity();
-      print(userCity);
       if (userCity != null) {
         final res = await http.get(Uri.parse(
             'https://api.openweathermap.org/data/2.5/forecast?q=$userCity&APPID=428297ac4f29c184baa6a54156ba03b0'));
@@ -73,13 +72,6 @@ class _WeatherForecastHomePageState extends State<WeatherForecastHomePage> {
     } catch (e) {
       throw e.toString();
     }
-  }
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    getCurrentWeather();
   }
 
   @override
@@ -157,12 +149,14 @@ class _WeatherForecastHomePageState extends State<WeatherForecastHomePage> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Image.network(
-                            iconUrl,
-                            width: 80,
-                            height: 80,
-                            fit: BoxFit.fill,
-                            // alignment: Alignment.center,
+                          SizedBox(
+                            width: 100,
+                            height: 60,
+                            child: Image.network(
+                              iconUrl,
+                              filterQuality: FilterQuality.high,
+                              // alignment: Alignment.center,
+                            ),
                           ),
                           Text(
                             '$currenSky',
